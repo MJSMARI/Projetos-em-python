@@ -1,0 +1,84 @@
+from playwright.sync_api import sync_playwright
+import time
+import requests
+import sys
+
+def preencher_form(link):
+
+    if not link.startswith("http"):
+        link = "https://" + link
+    print(f"link:{link}")
+
+    sessao = requests.Session()
+
+    url_real = sessao.get(link).url
+    url_envio = url_real.split('?')[0].replace("viewform","formResponse")
+
+    payload = {
+        "ID DA PERGUNTA": "RESPOSTA",
+        "ID DA PERGUNTA": "RESPOSTA",
+        "ID DA PERGUNTA": "RESPOSTA",
+        "ID DA PERGUNTA": "RESPOSTA",
+        "ID DA PERGUNTA": "RESPOSTA",
+        "ID DA PERGUNTA": "RESPOSTA"
+ 
+    }
+
+
+    resposta = sessao.post(url_envio, data=payload)
+    if resposta.status_code == 200:
+        print("sucesso")
+    else:
+        print(f"erro{resposta.status_code}")
+
+
+def cacar_link():
+    print("iniciando busca")
+
+
+    with sync_playwright() as p:
+
+        navegador = p.chromium.launch_persistent_context(
+            user_data_dir="./dados_sessao",
+            headless=True
+        )
+
+        pagina = navegador.new_page()
+        pagina.goto("LINK DO WHATSAPP")
+
+        pagina.wait_for_timeout(15000)
+
+
+        
+        pagina.locator("span[title*='NOME DA CONVERSA']").first.click()
+        pagina.wait_for_timeout(3000)
+    
+        while True:
+
+            mensagens = pagina.locator(".message-in").all_inner_texts()
+
+            for texto_msg in reversed(mensagens):
+                if "forms.gle" in texto_msg:
+
+                     palavras = texto_msg.split()
+                     for palavra in palavras:
+                          if "LINK DO FORMULARIO" in palavra:
+                             preencher_form(palavra)
+                             navegador.close()
+                    
+                             print("enviado")
+                        
+
+                             sys.exit()
+            time.sleep(2)
+
+
+print("robocop esperando")
+
+while True:
+    hora_atual = time.localtime()
+     #HORA DO PROCESSAMENTO
+    if (hora_atual.tm_hour == 6 and hora_atual.tm_min >= 40) or (hora_atual.tm_hour == 7 and hora_atual.tm_min <= 40):
+        cacar_link()
+
+    time.sleep(30)
