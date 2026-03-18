@@ -1,0 +1,30 @@
+from playwright.sync_api import sync_playwright
+import time 
+
+def criar_sessao():
+
+    with sync_playwright() as pr:
+        print("iniciando navegador para salvar sessao...")
+
+
+        navegador =  pr.chromium.launch_persistent_context(
+            user_data_dir="./dados_sessao",
+            headless=True
+        )
+
+        pagina = navegador.new_page()
+        pagina.goto("LINK DO WHATSAPP")
+
+        print("leia o qr code")
+        print("60s")
+
+
+        time.sleep(60)
+
+        print("sessao salva")
+        navegador.close()
+
+if __name__ == "__main__":
+    criar_sessao()
+
+
